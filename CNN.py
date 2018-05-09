@@ -95,13 +95,10 @@ if __name__=="__main__":
     w_fc2 = init_weight([3072, 1536], True)
     b_fc2 = init_bias([1536], True)
     h_fc2 = tf.nn.relu(b_fc2+tf.matmul(tf.reshape(h_fc1, [-1, 3072]), w_fc2))#(28709, 1536)
-    # dropout
-    drop_prob = tf.placeholder('float')
-    h_fc2_drop = tf.nn.dropout(h_fc2, 1-drop_prob)
-    # readout layer for deep net
+    # read output
     w_fc3 = init_weight([1536, labels_count], False)
     b_fc3 = init_bias([labels_count], False)
-    y = tf.nn.softmax(tf.matmul(h_fc2_drop, w_fc3) + b_fc3)#(28709, 7)
+    y = tf.nn.softmax(tf.matmul(h_fc2, w_fc3) + b_fc3)  # (28709, 7)
     # prediction function
     predict = tf.argmax(y, 1)
 
@@ -118,21 +115,18 @@ if __name__=="__main__":
     sess = tf.InteractiveSession()
     sess.run(init)
 
-    MAX_ITERATIONS = 10
-    DROPOUT_PROB = 0.5
+    MAX_ITERATIONS = 3000
     BATCH_SIZE = 50
-    display_step = 1
+    iter_display = 1
     get_new_batch = new_batch()
     for i in range(MAX_ITERATIONS):
         batch_x, batch_y = get_new_batch(train_pixels, train_labels, BATCH_SIZE)
         # check performance in the process
-        if (i % display_step)==0 or i==(MAX_ITERATIONS-1):
-            if (i == 10 or i == 100) and display_step < 100:
-                display_step *= 10
-            train_accuracy = accuracy.eval(feed_dict={x: batch_x, y_: batch_y, drop_prob: 0})
+        if (i % iter_display)==0 or i==(MAX_ITERATIONS-1):
+            if (i == 10 or i == 100) and iter_display < 100:
+                iter_display *= 10
+            train_accuracy = accuracy.eval(feed_dict={x: batch_x, y_: batch_y})
             print('step %d: accuracy=%.2f' % (i, train_accuracy))
-        sess.run(train_step, feed_dict={x: batch_x, y_: batch_y, drop_prob: DROPOUT_PROB})
+        sess.run(train_step, feed_dict={x: batch_x, y_: batch_y})
 
-    builder = tf.saved_model.builder.SavedModelBuilder(model_path)
-    builder.add_meta_graph_and_variables(sess,[tf.saved_model.tag_constants.TRAINING])
-    builder.save()
+    tf.saved_model.simple_save(sess, model_path, inputs={"x": x, "y_": y_}, outputs={"y": y})

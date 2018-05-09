@@ -1,2 +1,3 @@
 .vscode/launch.json
 .DS_Store
+__pycache__/CNN.cpython-36.pyc
