@@ -4,9 +4,9 @@ import tensorflow as tf
 import argparse
 import sys
 
-def load_training_data(file_path):
+def load_data(file_path, bTrain):
     data = pd.read_csv(file_path)
-    data = data[data.Usage == "Training"]
+    data = data[data.Usage == "Training"] if bTrain else data[data.Usage == "PublicTest"]
     pixels = data.pixels.str.split(" ").tolist()
     pixels = pd.DataFrame(pixels, dtype=int)
     return pixels.values.astype(np.float), data["emotion"].values.ravel()
@@ -44,8 +44,8 @@ def new_batch():
             start = 0
             train_index = batch_size
             re_order = np.random.shuffle(np.arange(num))
-            total_x = total_x[re_order]
-            total_y = total_y[re_order]
+            total_x = total_x[re_order][0]
+            total_y = total_y[re_order][0]
         end = train_index
         return total_x[start:end], total_y[start:end]
     return get_batch
@@ -64,7 +64,13 @@ if __name__=="__main__":
         print("no output path")
         sys.exit()
 
-    pixels, labels = load_training_data(data_file)
+    pixels, labels = load_data(data_file, False)
+    pixels_amount = pixels.shape[1]
+    labels_count = np.unique(labels).shape[0]
+    width = height = np.ceil(np.sqrt(pixels_amount)).astype(np.uint8)
+    test_pixels, test_labels = pre_processing(pixels, labels)
+
+    pixels, labels = load_data(data_file, True)
     pixels_amount = pixels.shape[1]
     labels_count = np.unique(labels).shape[0]
     width = height = np.ceil(np.sqrt(pixels_amount)).astype(np.uint8)
@@ -74,7 +80,7 @@ if __name__=="__main__":
     # input:x,  output: y_
     x = tf.placeholder('float', shape=[None, pixels_amount])#(28709, 2304)
     y_ = tf.placeholder('float', shape=[None, labels_count])#(28709, 7)
-    # first convolutional layer 64
+    # first convolutional layer
     w_conv1 = init_weight([5, 5, 1, 64], False)
     b_conv1 = init_bias([64], False)
     image = tf.reshape(x, [-1, width, height, 1])#(28709,48,48,1)
@@ -104,9 +110,9 @@ if __name__=="__main__":
 
     LEARNING_RATE = 1e-4
     # cost function
-    cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+    cost = -tf.reduce_sum(y_*tf.log(y))
     # optimization function
-    train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cross_entropy)
+    train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cost)
     # evaluation
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1)), 'float'))
 
@@ -115,8 +121,8 @@ if __name__=="__main__":
     sess = tf.InteractiveSession()
     sess.run(init)
 
-    MAX_ITERATIONS = 3000
-    BATCH_SIZE = 50
+    MAX_ITERATIONS = 10000
+    BATCH_SIZE = 100
     iter_display = 1
     get_new_batch = new_batch()
     for i in range(MAX_ITERATIONS):
@@ -126,7 +132,8 @@ if __name__=="__main__":
             if (i == 10 or i == 100) and iter_display < 100:
                 iter_display *= 10
             train_accuracy = accuracy.eval(feed_dict={x: batch_x, y_: batch_y})
-            print('step %d: accuracy=%.2f' % (i, train_accuracy))
+            validation_accuracy = accuracy.eval(feed_dict={x: test_pixels, y_: test_labels})
+            print('step %d: training accuracy=%.2f, validation_accuracy=%.2f' % (i, train_accuracy, validation_accuracy))
         sess.run(train_step, feed_dict={x: batch_x, y_: batch_y})
 
     tf.saved_model.simple_save(sess, model_path, inputs={"x": x, "y_": y_}, outputs={"y": y})
