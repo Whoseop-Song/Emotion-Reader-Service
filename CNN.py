@@ -13,11 +13,11 @@ def load_data(file_path, bTrain):
 
 def pre_processing(pixels, labels):
     #standarize pixels
-    pixels = pixels - pixels.mean(axis=1).reshape(-1, 1)
-    pixels = np.multiply(pixels, 100.0/255.0)
-    each_pixel_mean = pixels.mean(axis=0)
-    each_pixel_std = np.std(pixels, axis=0)
-    pixels = np.divide(np.subtract(pixels, each_pixel_mean), each_pixel_std)
+    # pixels = pixels - pixels.mean(axis=1).reshape(-1, 1)
+    # pixels = np.multiply(pixels, 100.0/255.0)
+    # each_pixel_mean = pixels.mean(axis=0)
+    # each_pixel_std = np.std(pixels, axis=0)
+    # pixels = np.divide(np.subtract(pixels, each_pixel_mean), each_pixel_std)
     #change labels numbers to vectors
     label_vectors = np.zeros((labels.shape[0], labels_count))
     for i in range(labels.shape[0]):
@@ -121,7 +121,7 @@ if __name__=="__main__":
     sess = tf.InteractiveSession()
     sess.run(init)
 
-    MAX_ITERATIONS = 10000
+    MAX_ITERATIONS = 4000
     BATCH_SIZE = 100
     iter_display = 1
     get_new_batch = new_batch()
