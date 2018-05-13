@@ -28,8 +28,8 @@ def get_face():
     global predict
     face_data = np.array(request.json)
     pixels, labels = pre_processing(face_data)
-    prediction = predict({"x": pixels, "y_": labels})
-    # prediction = np.argmax(prediction["y"], axis=1)
+    prediction = predict({"x": pixels, "y_": labels})["y"]
+    # prediction = np.argmax(prediction, axis=1)
     return jsonify(prediction.tolist())
 
 @app.after_request
