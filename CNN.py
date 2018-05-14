@@ -60,7 +60,7 @@ if __name__=="__main__":
         print("no input data")
         sys.exit()
     model_path = args.output
-    if (not data_file):
+    if (not model_path):
         print("no output path")
         sys.exit()
 

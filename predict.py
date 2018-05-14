@@ -1,10 +1,9 @@
 import tensorflow as tf
-import pandas as pd
 import numpy as np
+import argparse
+import sys
 from flask import Flask, request, Response, jsonify
 app = Flask(__name__)
-model_path = '/Users/kalryoma/Downloads/model'
-predict = tf.contrib.predictor.from_saved_model(model_path)
 
 def pre_processing(pixels):
     #standarize pixels
@@ -40,4 +39,13 @@ def after_request(response):
     return response
 
 if __name__=="__main__":
+    global predict
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-model", help="the SavedModel path")
+    args = parser.parse_args()
+    model_path = args.model
+    if (not model_path):
+        print("no model path")
+        sys.exit()
+    predict = tf.contrib.predictor.from_saved_model(model_path)
     app.run(debug=True)

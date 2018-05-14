@@ -1,4 +1,4 @@
-let emotionName = ["Neutral", "Neutral", "Neutral", "Happy", "Sad", "Surprised", "Neutral"];
+let emotionName = ["Neutral", "Disgust", "Neutral", "Happy", "Sad", "Surprised", "Neutral"];
 let eCount = [0, 0, 0, 0, 0, 0, 0, 0];
 let prevEmotion = 6;
 
