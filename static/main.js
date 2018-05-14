@@ -1,9 +1,11 @@
-let eCount = [0,0,0,0,0,0,0,0];
+let emotionName = ["Neutral", "Neutral", "Neutral", "Happy", "Sad", "Surprised", "Neutral"];
+let eCount = [0, 0, 0, 0, 0, 0, 0, 0];
 let prevEmotion = 6;
+
 function countEmotion(emotion) {
     // eCount[emotion] += 1;
-    for (let j=0; j<emotion.length; j++){
-        for (let i = 0; i < eCount.length-1; i++) {
+    for (let j = 0; j < emotion.length; j++) {
+        for (let i = 0; i < eCount.length - 1; i++) {
             eCount[i] += emotion[j][i];
         }
     }
@@ -28,10 +30,11 @@ function grab_face(e) {
     canvas.width = video.offsetWidth;
     canvas.height = video.offsetHeight;
     context.clearRect(0, 0, canvas.width, canvas.height);
+    let ratio = video.offsetWidth / video.videoWidth;
     face_data = []
     count = 0
     e.data.forEach(rect => {
-        context.drawImage(video, rect.x, rect.y, rect.width+50, rect.height+50, 0, 0, 48, 48);
+        context.drawImage(video, rect.x / ratio, rect.y / ratio, rect.width / ratio, rect.height / ratio, 0, 0, 48, 48);
         data = context.getImageData(0, 0, 48, 48);
         face_data[count] = [];
         // let conv = [0.299, 0.587, 0.114];
@@ -47,6 +50,28 @@ function grab_face(e) {
     }
 }
 
+let currSpeakEmotion = "";
+function speekOut(emotion) {
+    if (emotion!==currSpeakEmotion){
+        currSpeakEmotion = emotion;
+        if (currSpeakEmotion!=="Neutral"){
+            window.speechSynthesis.cancel();
+            let msg = new SpeechSynthesisUtterance(currSpeakEmotion);
+            msg.rate = 1;
+            window.speechSynthesis.speak(msg);
+        }
+    }
+}
+
+function displayEmotion(emotion) {
+    currEmotion = emotionName[emotion];
+    // console.log("new emotion is", emotionName[emotion]);
+    context.font = '20px Helvetica';
+    context.fillStyle = "#fff";
+    context.fillText(currEmotion, 50, 50);
+    speekOut(currEmotion);
+}
+
 let video = document.getElementById("myVideo");
 let canvas = document.getElementById("canvas");
 let context = canvas.getContext('2d');
@@ -55,7 +80,9 @@ let tracker = new tracking.ObjectTracker('face');
 tracker.setInitialScale(4.5);
 tracker.setStepSize(1.5);
 tracker.setEdgesDensity(0.1);
-trackingTask = tracking.track('#myVideo', tracker, {camera:true});
+trackingTask = tracking.track('#myVideo', tracker, {
+    camera: true
+});
 tracker.on('track', function (e) {
     grab_face(e);
 });
@@ -71,19 +98,19 @@ function trackFace() {
         promise.then(function () {
             let max = 0;
             let emotion = 6;
-            for (let i = 0; i < eCount.length-1; i++) {
-                if (eCount[i]/eCount[7] > max) {
+            for (let i = 0; i < eCount.length - 1; i++) {
+                if (eCount[i] / eCount[7] > max) {
                     max = eCount[i];
                     emotion = i;
                 }
             }
             if (emotion != prevEmotion) {
                 prevEmotion = emotion;
-                console.log("new emotion is", emotion);
+                displayEmotion(emotion);
             }
             eCount = [0, 0, 0, 0, 0, 0, 0, 0];
         })
-    }, 100);
+    }, 50);
 }
 
-setInterval(trackFace, 1000);
+setInterval(trackFace, 500);

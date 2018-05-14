@@ -80,14 +80,14 @@ if __name__=="__main__":
     # input:x,  output: y_
     x = tf.placeholder('float', shape=[None, pixels_amount])#(28709, 2304)
     y_ = tf.placeholder('float', shape=[None, labels_count])#(28709, 7)
-    # first convolutional layer
+    # convolutional layer 1
     w_conv1 = init_weight([5, 5, 1, 64], False)
     b_conv1 = init_bias([64], False)
     image = tf.reshape(x, [-1, width, height, 1])#(28709,48,48,1)
     h_conv1 = tf.nn.relu(b_conv1+tf.nn.conv2d(image, w_conv1, strides=[1, 1, 1, 1], padding="SAME"))#(28709,48,48,64)
     h_pool1 = tf.nn.max_pool(h_conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME')#(28709,24,24,64)
     h_norm1 = tf.nn.lrn(h_pool1, 4, bias=1.0, alpha=0.001/9.0, beta=0.75)#(28709,24,24,64)
-    # second convolutional layer
+    # convolutional layer 2
     w_conv2 = init_weight([5, 5, 64, 128], False)
     b_conv2 = init_bias([128], False)
     h_conv2 = tf.nn.relu(b_conv2+tf.nn.conv2d(h_norm1, w_conv2, strides=[1, 1, 1, 1], padding="SAME"))#(28709,24,24,128)
