@@ -18,6 +18,7 @@ This is a face expression recognition service based on a Flask server setup  com
 2. Start the Flask server.
     * `python predict.py <folder-path-storing-SavedModel>`
     * The argument of SavedModel path is the same as the output path in step 1.
+3. I shared my pre-trained SavedModel and the csv dataset to [Google Drive Here](https://drive.google.com/drive/folders/1M8j8D-4RSOS6HokOhNhsSR2KxMRwRvdI?usp=sharing). You can download them so that you can run the server right away.
 
 ## Try the demo
 Now you can visit [localhost:5000]() (or the server ip where you deploy this repo) to play with the demo.
