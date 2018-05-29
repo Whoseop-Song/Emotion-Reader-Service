@@ -1,4 +1,4 @@
-let emotionName = ["Neutral", "Disgust", "Neutral", "Happy", "Sad", "Surprised", "Neutral"];
+let emotionName = ["Neutral", "Disgust", "Neutral", "Happy", "Neutral", "Surprised", "Neutral"];
 let eCount = [0, 0, 0, 0, 0, 0, 0, 0];
 let prevEmotion = 6;
 
@@ -64,12 +64,14 @@ function speekOut(emotion) {
 }
 
 function displayEmotion(emotion) {
-    currEmotion = emotionName[emotion];
-    // console.log("new emotion is", emotionName[emotion]);
-    context.font = '20px Helvetica';
-    context.fillStyle = "#fff";
-    context.fillText(currEmotion, 50, 50);
-    speekOut(currEmotion);
+    if (emotionName[emotion] !== "Neutral") {
+        currEmotion = emotionName[emotion];
+        // console.log("new emotion is", emotionName[emotion]);
+        context.font = '20px Helvetica';
+        context.fillStyle = "#fff";
+        context.fillText(currEmotion, 50, 50);
+        speekOut(currEmotion);
+    }
 }
 
 let video = document.getElementById("myVideo");
@@ -98,6 +100,7 @@ function trackFace() {
         promise.then(function () {
             let max = 0;
             let emotion = 6;
+            prevEmotion = 6;
             for (let i = 0; i < eCount.length - 1; i++) {
                 if (eCount[i] / eCount[7] > max) {
                     max = eCount[i];

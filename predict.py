@@ -4,6 +4,7 @@ import argparse
 import sys
 from flask import Flask, request, Response, jsonify
 app = Flask(__name__)
+predict = None
 
 def pre_processing(pixels):
     #standarize pixels
@@ -24,7 +25,7 @@ def main_page():
 
 @app.route('/face', methods=['POST'])
 def get_face():
-    global predict
+    # global predict
     face_data = np.array(request.json)
     pixels, labels = pre_processing(face_data)
     prediction = predict({"x": pixels, "y_": labels})["y"]
@@ -39,7 +40,7 @@ def after_request(response):
     return response
 
 if __name__=="__main__":
-    global predict
+    # global predict
     parser = argparse.ArgumentParser()
     parser.add_argument("-model", help="the SavedModel path")
     args = parser.parse_args()
